@@ -20,8 +20,13 @@ package de.minestar.contao.database;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
+import de.minestar.contao.data.User;
 import de.minestar.minestarlibrary.database.AbstractMySQLHandler;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class DatabaseHandler extends AbstractMySQLHandler {
 
@@ -36,6 +41,36 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 
     @Override
     protected void createStatements(String pluginName, Connection con) throws Exception {
-        // TODO Auto-generated method stub
+
+        selectUser = con.prepareStatement("SELECT mc_pay.id, contao_user_id, tl_member.username, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate FROM mc_pay, tl_member WHERE minecraft_nick = ? AND contao_user_id = tl_member.id");
+    }
+
+    private PreparedStatement selectUser;
+
+    public User getUser(String minecraftNick) {
+        try {
+
+            selectUser.setString(1, minecraftNick);
+            ResultSet rs = selectUser.executeQuery();
+
+            // NO USER FOUND
+            if (!rs.next())
+                return null;
+
+            // TEMP VARS
+            int ID = rs.getInt(1);
+            int contaoID = rs.getInt(2);
+            String contaoNickname = rs.getString(3);
+            String minecraftNickname = rs.getString(4);
+            Timestamp expireDate = rs.getTimestamp(5);
+            Timestamp startDate = rs.getTimestamp(6);
+            Timestamp probeEndDate = rs.getTimestamp(7);
+
+            return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate);
+
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't get user information from database! User = " + minecraftNick);
+            return null;
+        }
     }
 }
