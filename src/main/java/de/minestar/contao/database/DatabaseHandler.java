@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.sql.Types;
 
 import de.minestar.contao.data.User;
 import de.minestar.minestarlibrary.database.AbstractMySQLHandler;
@@ -42,10 +43,27 @@ public class DatabaseHandler extends AbstractMySQLHandler {
     @Override
     protected void createStatements(String pluginName, Connection con) throws Exception {
 
-        selectUser = con.prepareStatement("SELECT mc_pay.id, contao_user_id, tl_member.username, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate FROM mc_pay, tl_member WHERE minecraft_nick = ? AND contao_user_id = tl_member.id");
+        selectUser = con.prepareStatement("SELECT mc_pay.id, contao_user_id, tl_member.username, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate, usedFreePayWeek FROM mc_pay, tl_member WHERE minecraft_nick = ? AND contao_user_id = tl_member.id");
+
+        selectContaoID = con.prepareStatement("SELECT tl_member.id FROM tl_member WHERE tl_member.username = ?");
+
+        addUser = con.prepareStatement("INSERT INTO mc_pay (contao_user_id, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate, totalBreak, totalPlaced, usedFreePayWeek) VALUES (?, ?, ?, '1111-11-11', NOW(), ADDDATE(NOW(), INTERVAL 2 WEEK), 0, 0, 0)");
+
+        updateExpireDate = con.prepareStatement("UPDATE mc_pay SET expire_date = ? WHERE id = ?");
+
+        updateProbeEndDate = con.prepareStatement("UPDATE mc_pay SET probeEndDate = ? WHERE id = ?");
+
+        updateFreePayWeek = con.prepareStatement("UPDATE mc_pay SET usedFreePayWeek = ? WHERE id = ?");
     }
 
     private PreparedStatement selectUser;
+    private PreparedStatement selectContaoID;
+
+    private PreparedStatement addUser;
+
+    private PreparedStatement updateExpireDate;
+    private PreparedStatement updateProbeEndDate;
+    private PreparedStatement updateFreePayWeek;
 
     public User getUser(String minecraftNick) {
         try {
@@ -65,12 +83,91 @@ public class DatabaseHandler extends AbstractMySQLHandler {
             Timestamp expireDate = rs.getTimestamp(5);
             Timestamp startDate = rs.getTimestamp(6);
             Timestamp probeEndDate = rs.getTimestamp(7);
+            boolean usedFreePayWeek = rs.getBoolean(8);
 
-            return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate);
+            return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate, usedFreePayWeek);
 
         } catch (Exception e) {
             ConsoleUtils.printException(e, pluginName, "Can't get user information from database! User = " + minecraftNick);
             return null;
+        }
+    }
+
+    public int getContaoID(String homepageNick) {
+        try {
+
+            selectContaoID.setString(1, homepageNick);
+            ResultSet rs = selectContaoID.executeQuery();
+
+            // NO NICK FOUND
+            if (!rs.next())
+                return Integer.MIN_VALUE;
+
+            return rs.getInt(1);
+
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't get contaoID from database! HomepageNick = " + homepageNick);
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    public boolean addUser(int contaoID, String minecraftNick, String commandSender) {
+
+        try {
+
+            addUser.setInt(1, contaoID);
+            addUser.setString(2, minecraftNick);
+            addUser.setString(3, commandSender);
+
+            return addUser.executeUpdate() == 1;
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't add user to database! ContaoID = " + contaoID + " ; MinecraftNick = " + minecraftNick + " ; CommandSender  = " + commandSender);
+            return false;
+        }
+    }
+
+    public boolean updateExpireDate(User user, Timestamp newDate) {
+
+        try {
+
+            updateExpireDate.setTimestamp(1, newDate);
+            updateExpireDate.setInt(2, user.getID());
+
+            return updateExpireDate.executeUpdate() == 1;
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't update expire date in database ! User = " + user + " ; NewDate=" + newDate);
+            return false;
+        }
+    }
+
+    public boolean updateProbeEndDate(User user, Timestamp newDate) {
+        try {
+
+            // TODO: Maybe this is not necessary!
+            if (newDate == null)
+                updateProbeEndDate.setNull(1, Types.TIMESTAMP);
+            else
+                updateProbeEndDate.setTimestamp(1, newDate);
+
+            updateProbeEndDate.setInt(2, user.getID());
+
+            return updateProbeEndDate.executeUpdate() == 1;
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't update probe end date in database! User = " + user + " ; NewDate=" + newDate);
+            return false;
+        }
+    }
+
+    public boolean updateFreePayWeek(User user, boolean hasUsed) {
+        try {
+
+            updateFreePayWeek.setBoolean(1, hasUsed);
+            updateFreePayWeek.setInt(2, user.getID());
+
+            return updateFreePayWeek.executeUpdate() == 1;
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't update free pay week state in database! User = " + user + " ; HasUsed=" + hasUsed);
+            return false;
         }
     }
 }

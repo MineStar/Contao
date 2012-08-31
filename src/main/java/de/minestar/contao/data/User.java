@@ -29,8 +29,9 @@ public class User {
     private final Timestamp expireDate;
     private final Timestamp startDate;
     private final Timestamp probeEndDate;
+    private final boolean usedFreePayWeek;
 
-    public User(int ID, int contaoID, String contaoNickname, String minecraftNickname, Timestamp expireDate, Timestamp startDate, Timestamp probeEndDate) {
+    public User(int ID, int contaoID, String contaoNickname, String minecraftNickname, Timestamp expireDate, Timestamp startDate, Timestamp probeEndDate, boolean usedFreePayWeek) {
         this.ID = ID;
         this.contaoID = contaoID;
         this.contaoNickname = contaoNickname;
@@ -38,6 +39,7 @@ public class User {
         this.expireDate = expireDate;
         this.startDate = startDate;
         this.probeEndDate = probeEndDate;
+        this.usedFreePayWeek = usedFreePayWeek;
     }
 
     public int getID() {
@@ -68,8 +70,12 @@ public class User {
         return probeEndDate;
     }
 
+    public boolean usedFreePayWeek() {
+        return usedFreePayWeek;
+    }
+
     @Override
     public String toString() {
-        return "User={ID=" + ID + " ; ContaoID=" + contaoID + " ; ContaoNickname=" + contaoNickname + " ; MinecraftNickname=" + minecraftNickname + " ; ExpireDate=" + expireDate + " ; StartDate=" + startDate + " ; ProbeEndDate=" + probeEndDate + "}";
+        return "User={ID=" + ID + " ; ContaoID=" + contaoID + " ; ContaoNickname=" + contaoNickname + " ; MinecraftNickname=" + minecraftNickname + " ; ExpireDate=" + expireDate + " ; StartDate=" + startDate + " ; ProbeEndDate=" + probeEndDate + " ; UsedFreePayWeek=" + usedFreePayWeek + " }";
     }
 }
