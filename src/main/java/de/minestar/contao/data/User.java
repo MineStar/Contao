@@ -67,4 +67,9 @@ public class User {
     public Timestamp getProbeEndDate() {
         return probeEndDate;
     }
+
+    @Override
+    public String toString() {
+        return "User={ID=" + ID + " ; ContaoID=" + contaoID + " ; ContaoNickname=" + contaoNickname + " ; MinecraftNickname=" + minecraftNickname + " ; ExpireDate=" + expireDate + " ; StartDate=" + startDate + " ; ProbeEndDate=" + probeEndDate + "}";
+    }
 }
