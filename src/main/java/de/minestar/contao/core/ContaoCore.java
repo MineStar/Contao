@@ -1,6 +1,9 @@
 package de.minestar.contao.core;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import org.bukkit.scheduler.BukkitScheduler;
 
 import de.minestar.contao.commands.contao.cmdContao;
 import de.minestar.contao.commands.contao.cmdFreeSlot;
@@ -20,15 +23,25 @@ import de.minestar.contao.commands.user.cmdUnMod;
 import de.minestar.contao.commands.user.cmdUser;
 import de.minestar.contao.commands.user.cmdX;
 import de.minestar.contao.database.DatabaseHandler;
+import de.minestar.contao.statistics.OnlineStatistic;
+import de.minestar.contao.threads.OnlineStatisticThread;
 import de.minestar.minestarlibrary.AbstractCore;
+import de.minestar.minestarlibrary.annotations.UseStatistic;
 import de.minestar.minestarlibrary.commands.CommandList;
+import de.minestar.minestarlibrary.stats.StatisticHandler;
 
+@UseStatistic
 public class ContaoCore extends AbstractCore {
 
     public static final String NAME = "Contao";
 
     // DATABASE HANDLER
     public static DatabaseHandler dbHandler;
+
+    // MANANGER
+
+    // THREADS
+    private Runnable onlineStatisticThread;
 
     public ContaoCore() {
         super(NAME);
@@ -47,7 +60,7 @@ public class ContaoCore extends AbstractCore {
     @Override
     protected boolean createCommands() {
         // @formatter:off
-        
+
         cmdList = new CommandList(NAME, 
 
                 // LIST COMMAND
@@ -59,7 +72,7 @@ public class ContaoCore extends AbstractCore {
 
                 // USER-MANGEMENT COMMANDS
                 new cmdUser         ("/user",       "",     "",
-                        
+
                         // GROUP CHANGE COMMANDS
                         new cmdX            ("x",           "<IngameName> <Grund>",         "contao.rights.x"),
                         new cmdDefault      ("default",     "<IngameName>",                 "contao.rights.default"),
@@ -92,6 +105,28 @@ public class ContaoCore extends AbstractCore {
         );
         // @formatter:on
 
+        return true;
+    }
+
+    @Override
+    protected boolean registerStatistics() {
+
+        StatisticHandler.registerStatistic(OnlineStatistic.class);
+
+        return true;
+    }
+
+    @Override
+    protected boolean createThreads() {
+
+        onlineStatisticThread = new OnlineStatisticThread();
+        return true;
+    }
+
+    @Override
+    protected boolean startThreads(BukkitScheduler scheduler) {
+
+        scheduler.scheduleSyncRepeatingTask(this, onlineStatisticThread, 20L * TimeUnit.MINUTES.toSeconds(10), 20L * TimeUnit.MINUTES.toSeconds(10));
         return true;
     }
 
