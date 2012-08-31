@@ -1,0 +1,5 @@
+name: Contao
+main: de.minestar.contao.core.ContaoCore
+version: ${pom.version}
+softdepend: [Illuminati]
+depend: [GroupManager, MinestarCore, MineStarLibrary]
