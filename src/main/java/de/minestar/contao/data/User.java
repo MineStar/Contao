@@ -19,6 +19,9 @@
 package de.minestar.contao.data;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class User {
 
@@ -72,6 +75,14 @@ public class User {
 
     public boolean usedFreePayWeek() {
         return usedFreePayWeek;
+    }
+
+    public boolean isPayExpired(Date date) {
+        return expireDate.after(date);
+    }
+
+    public boolean inProbeEnded(Date date) {
+        return probeEndDate.after(date);
     }
 
     @Override
