@@ -19,12 +19,14 @@
 package de.minestar.contao.database;
 
 import java.io.File;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.User;
 import de.minestar.minestarlibrary.database.AbstractMySQLHandler;
 import de.minestar.minestarlibrary.utils.ConsoleUtils;
@@ -47,6 +49,8 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 
         selectContaoID = con.prepareStatement("SELECT tl_member.id FROM tl_member WHERE tl_member.username = ?");
 
+        selectGroup = con.prepareStatement("SELECT groups FROM tl_member WHERE id = ?");
+
         addUser = con.prepareStatement("INSERT INTO mc_pay (contao_user_id, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate, totalBreak, totalPlaced, usedFreePayWeek) VALUES (?, ?, ?, '1111-11-11', NOW(), ADDDATE(NOW(), INTERVAL 2 WEEK), 0, 0, 0)");
 
         updateExpireDate = con.prepareStatement("UPDATE mc_pay SET expire_date = ? WHERE id = ?");
@@ -58,6 +62,7 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 
     private PreparedStatement selectUser;
     private PreparedStatement selectContaoID;
+    private PreparedStatement selectGroup;
 
     private PreparedStatement addUser;
 
@@ -84,11 +89,46 @@ public class DatabaseHandler extends AbstractMySQLHandler {
             Timestamp startDate = rs.getTimestamp(6);
             Timestamp probeEndDate = rs.getTimestamp(7);
             boolean usedFreePayWeek = rs.getBoolean(8);
+            
+            ContaoGroup group = getGroup(contaoID);
 
-            return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate, usedFreePayWeek);
+            return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate, usedFreePayWeek, group);
 
         } catch (Exception e) {
             ConsoleUtils.printException(e, pluginName, "Can't get user information from database! User = " + minecraftNick);
+            return null;
+        }
+    }
+
+    private ContaoGroup getGroup(int id) {
+        try {
+
+            selectGroup.setInt(1, id);
+            ResultSet rs = selectGroup.executeQuery();
+
+            if (!rs.next())
+                return null;
+
+            Blob blob = rs.getBlob(1);
+            byte[] bData = blob.getBytes(1, (int) blob.length());
+            String group = new String(bData);
+
+            group = group.replace("a:2:{i:0;s:1:\"", "");
+            group = group.replace("\";i:1;s:1:\"2", "");
+            group = group.replace("a:1:{i:0;s:1:\"", "");
+            group = group.replace("\";}", "");
+
+            int groupID = -1;
+            try {
+                groupID = Integer.parseInt(group);
+            } catch (Exception e) {
+                ConsoleUtils.printException(e, pluginName, "Can't parse id string to get group id! GroupString=" + group);
+                return null;
+            }
+
+            return ContaoGroup.get(groupID);
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't get ContaoGroup! ContaoUserId=" + id);
             return null;
         }
     }
