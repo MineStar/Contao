@@ -3,6 +3,8 @@ package de.minestar.contao.core;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import de.minestar.contao.commands.contao.cmdContao;
@@ -23,6 +25,8 @@ import de.minestar.contao.commands.user.cmdUnMod;
 import de.minestar.contao.commands.user.cmdUser;
 import de.minestar.contao.commands.user.cmdX;
 import de.minestar.contao.database.DatabaseHandler;
+import de.minestar.contao.listener.PlayerListener;
+import de.minestar.contao.manager.PlayerManager;
 import de.minestar.contao.statistics.OnlineStatistic;
 import de.minestar.contao.threads.OnlineStatisticThread;
 import de.minestar.minestarlibrary.AbstractCore;
@@ -39,6 +43,10 @@ public class ContaoCore extends AbstractCore {
     public static DatabaseHandler dbHandler;
 
     // MANANGER
+    public static PlayerManager pManager;
+
+    // LISTENER
+    private Listener playerListener;
 
     // THREADS
     private Runnable onlineStatisticThread;
@@ -53,6 +61,8 @@ public class ContaoCore extends AbstractCore {
         dbHandler = new DatabaseHandler(NAME, new File(getDataFolder(), "sqlconfig.yml"));
         if (dbHandler == null || !dbHandler.hasConnection())
             return false;
+
+        pManager = new PlayerManager();
 
         return true;
     }
@@ -104,6 +114,21 @@ public class ContaoCore extends AbstractCore {
 
         );
         // @formatter:on
+
+        return true;
+    }
+
+    @Override
+    protected boolean createListener() {
+
+        playerListener = new PlayerListener();
+        return true;
+    }
+
+    @Override
+    protected boolean registerEvents(PluginManager pm) {
+
+        pm.registerEvents(playerListener, this);
 
         return true;
     }
