@@ -60,9 +60,9 @@ public class PlayerListener implements Listener {
         }
         // PLAYER IS AT LEAST A PROBE MEMBER
         else {
-            // ADMINS ARE NOT CONTROLLED BY SYSTEM TO PREVENT ERRORS
-            if (user.getGroup().equals(ContaoGroup.ADMIN))
-                return;
+//            // ADMINS ARE NOT CONTROLLED BY SYSTEM TO PREVENT ERRORS
+//            if (user.getGroup().equals(ContaoGroup.ADMIN))
+//                return;
 
             // GET GROUP FROM GROUP MANAGER PLUGIN
             MinestarGroup localGroup = MinestarCore.getPlayer(event.getName()).getMinestarGroup();
@@ -108,6 +108,10 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
 
         User user = attemptToLoginUser.get(player.getName().toLowerCase());
+        if (user == null) {
+            // SOMETHING WENT SOMEWHERE TERRIBLE WRONG
+            return;
+        }
         ContaoCore.pManager.addUser(user);
 
         // TODO: Send start up information

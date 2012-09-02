@@ -28,6 +28,8 @@ import org.bukkit.entity.Player;
 import de.minestar.contao.core.Settings;
 import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.User;
+import de.minestar.core.MinestarCore;
+import de.minestar.core.units.MinestarPlayer;
 
 public class PlayerManager {
 
@@ -91,4 +93,18 @@ public class PlayerManager {
         return groupMap.get(contaoGroup).size();
     }
 
+    public void changeGroup(User user, ContaoGroup newGroup) {
+
+        groupMap.get(user.getGroup()).remove(user);
+        groupMap.get(newGroup).add(user);
+
+        setGroup(user, newGroup);
+    }
+
+    public void setGroup(User user, ContaoGroup newGroup) {
+        MinestarPlayer mPlayer = MinestarCore.getPlayer(user.getMinecraftNickname());
+        if (mPlayer != null) {
+            mPlayer.setGroup(newGroup.getMinestarGroup());
+        }
+    }
 }

@@ -51,6 +51,10 @@ public class DatabaseHandler extends AbstractMySQLHandler {
 
         selectGroup = con.prepareStatement("SELECT groups FROM tl_member WHERE id = ?");
 
+        selectHasAccount = con.prepareStatement("SELECT 1 FROM mc_pay WHERE minecraft_nick = ?");
+
+        selectIsAccountActive = con.prepareStatement("SELECT 1 FROM tl_member WHERE id = ?");
+
         addUser = con.prepareStatement("INSERT INTO mc_pay (contao_user_id, minecraft_nick, admin_nick, expire_date, startDate, probeEndDate, totalBreak, totalPlaced, usedFreePayWeek) VALUES (?, ?, ?, '1111-11-11', NOW(), ADDDATE(NOW(), INTERVAL 2 WEEK), 0, 0, 0)");
 
         updateExpireDate = con.prepareStatement("UPDATE mc_pay SET expire_date = ? WHERE id = ?");
@@ -58,17 +62,22 @@ public class DatabaseHandler extends AbstractMySQLHandler {
         updateProbeEndDate = con.prepareStatement("UPDATE mc_pay SET probeEndDate = ? WHERE id = ?");
 
         updateFreePayWeek = con.prepareStatement("UPDATE mc_pay SET usedFreePayWeek = ? WHERE id = ?");
+
+        updateGroup = con.prepareStatement("UPDATE tl_member SET groups = ? WHERE id = ?");
     }
 
     private PreparedStatement selectUser;
     private PreparedStatement selectContaoID;
     private PreparedStatement selectGroup;
+    private PreparedStatement selectHasAccount;
+    private PreparedStatement selectIsAccountActive;
 
     private PreparedStatement addUser;
 
     private PreparedStatement updateExpireDate;
     private PreparedStatement updateProbeEndDate;
     private PreparedStatement updateFreePayWeek;
+    private PreparedStatement updateGroup;
 
     public User getUser(String minecraftNick) {
         try {
@@ -89,7 +98,7 @@ public class DatabaseHandler extends AbstractMySQLHandler {
             Timestamp startDate = rs.getTimestamp(6);
             Timestamp probeEndDate = rs.getTimestamp(7);
             boolean usedFreePayWeek = rs.getBoolean(8);
-            
+
             ContaoGroup group = getGroup(contaoID);
 
             return new User(ID, contaoID, contaoNickname, minecraftNickname, expireDate, startDate, probeEndDate, usedFreePayWeek, group);
@@ -166,6 +175,28 @@ public class DatabaseHandler extends AbstractMySQLHandler {
         }
     }
 
+    public boolean hasAccount(String minecraftNick) {
+
+        try {
+            selectHasAccount.setString(1, minecraftNick);
+            return selectHasAccount.executeQuery().next();
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't check if user has an contao account! MinecraftNick = " + minecraftNick);
+            return false;
+        }
+    }
+
+    public boolean isAccountDisabled(int id) {
+
+        try {
+            selectIsAccountActive.setInt(1, id);
+            return selectIsAccountActive.executeQuery().next();
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't check if user account is disabled! ContaoID = " + id);
+            return false;
+        }
+    }
+
     public boolean updateExpireDate(User user, Timestamp newDate) {
 
         try {
@@ -207,6 +238,19 @@ public class DatabaseHandler extends AbstractMySQLHandler {
             return updateFreePayWeek.executeUpdate() == 1;
         } catch (Exception e) {
             ConsoleUtils.printException(e, pluginName, "Can't update free pay week state in database! User = " + user + " ; HasUsed=" + hasUsed);
+            return false;
+        }
+    }
+
+    public boolean updateGroup(User user, ContaoGroup newGroup) {
+        try {
+
+            updateGroup.setString(1, new String(newGroup.getContaoString().getBytes("UTF-8")));
+            updateGroup.setInt(2, user.getID());
+
+            return updateGroup.executeUpdate() == 1;
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, pluginName, "Can't update group! User = " + user + " ; NewGroup = " + newGroup);
             return false;
         }
     }
