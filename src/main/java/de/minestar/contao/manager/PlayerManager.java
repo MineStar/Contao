@@ -20,6 +20,7 @@ package de.minestar.contao.manager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import de.minestar.contao.data.ContaoGroup;
@@ -51,6 +52,33 @@ public class PlayerManager {
 
     public User getUser(String userName) {
         return onlineUserMap.get(userName.toLowerCase());
+    }
+
+    public String getGroupAsString(ContaoGroup contaoGroup) {
+        Set<User> groupMember = groupMap.get(contaoGroup);
+        if (groupMember.isEmpty())
+            return null;
+
+        // TODO: Get color for this group and append it
+        StringBuilder sBuilder = new StringBuilder();
+        // BUILD HEAD
+        sBuilder.append(contaoGroup.getDisplayName());
+        sBuilder.append('(');
+        sBuilder.append(getGroupSize(contaoGroup));
+        sBuilder.append(") : ");
+
+        for (User user : groupMember) {
+            sBuilder.append(user.getMinecraftNickname());
+            sBuilder.append(", ");
+        }
+
+        sBuilder.delete(0, sBuilder.length() - 2);
+
+        return sBuilder.toString();
+    }
+
+    public int getGroupSize(ContaoGroup contaoGroup) {
+        return groupMap.get(contaoGroup).size();
     }
 
 }

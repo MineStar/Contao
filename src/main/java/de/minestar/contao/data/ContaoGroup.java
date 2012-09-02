@@ -26,13 +26,13 @@ import de.minestar.core.units.MinestarGroup;
 public enum ContaoGroup {
 
     //@formatter:off
-    ADMIN   (MinestarGroup.ADMIN,   3,      "a:2:{i:0;s:1:\"3\";i:1;s:1:\"2\";}"),
-    MOD     (MinestarGroup.MOD,     6,      "a:2:{i:0;s:1:\"6\";i:1;s:1:\"2\";}"),
-    PAY     (MinestarGroup.PAY,     2,      "a:1:{i:0;s:1:\"2\";}"),
-    FREE    (MinestarGroup.FREE,    1,      "a:1:{i:0;s:1:\"1\";}"),
-    PROBE   (MinestarGroup.PROBE,   5,      "a:1:{i:0;s:1:\"5\";}"),
-    DEFAULT (MinestarGroup.DEFAULT, -1,     "a:1:{i:0;s:1:\"4\";}"),
-    X       (MinestarGroup.X,       -1,     "a:1:{i:0;s:1:\"4\";}");
+    ADMIN   (MinestarGroup.ADMIN,   "Admin",    3,      "a:2:{i:0;s:1:\"3\";i:1;s:1:\"2\";}"),
+    MOD     (MinestarGroup.MOD,     "Mod",      6,      "a:2:{i:0;s:1:\"6\";i:1;s:1:\"2\";}"),
+    PAY     (MinestarGroup.PAY,     "Pay",      2,      "a:1:{i:0;s:1:\"2\";}"),
+    FREE    (MinestarGroup.FREE,    "Free",     1,      "a:1:{i:0;s:1:\"1\";}"),
+    PROBE   (MinestarGroup.PROBE,   "Probe",    5,      "a:1:{i:0;s:1:\"5\";}"),
+    DEFAULT (MinestarGroup.DEFAULT, "Gast",     -1,     "a:1:{i:0;s:1:\"4\";}"),
+    X       (MinestarGroup.X,       "X",        -1,     "a:1:{i:0;s:1:\"4\";}");
     //@formatter:on
 
     private final MinestarGroup group;
@@ -41,8 +41,11 @@ public enum ContaoGroup {
     // The serialized string in contao database
     private final String contaoString;
 
-    private ContaoGroup(MinestarGroup group, int contaoGroupId, String contaoString) {
+    private final String displayName;
+
+    private ContaoGroup(MinestarGroup group, String displayName, int contaoGroupId, String contaoString) {
         this.contaoString = contaoString;
+        this.displayName = displayName;
         this.contaoGroupId = contaoGroupId;
         this.group = group;
     }
@@ -70,6 +73,10 @@ public enum ContaoGroup {
 
     public MinestarGroup getMinestarGroup() {
         return group;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     private static Map<String, ContaoGroup> mapByName;

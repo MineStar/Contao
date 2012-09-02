@@ -20,6 +20,8 @@ package de.minestar.contao.threads;
 
 import org.bukkit.Bukkit;
 
+import de.minestar.contao.core.ContaoCore;
+import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.statistics.OnlineStatistic;
 import de.minestar.minestarlibrary.stats.StatisticHandler;
 
@@ -27,8 +29,18 @@ public class OnlineStatisticThread implements Runnable {
 
     @Override
     public void run() {
-        // TODO: GET GROUP SIZE
-        StatisticHandler.handleStatistic(new OnlineStatistic(Bukkit.getOnlinePlayers().length, -1, -1, -1, -1, -1, -1, -1));
+
+        // GET GROUP SIZE
+        int totalPlayer = Bukkit.getOnlinePlayers().length;
+        int xUser = ContaoCore.pManager.getGroupSize(ContaoGroup.X);
+        int defaultUser = ContaoCore.pManager.getGroupSize(ContaoGroup.DEFAULT);
+        int probeUser = ContaoCore.pManager.getGroupSize(ContaoGroup.PROBE);
+        int freeUser = ContaoCore.pManager.getGroupSize(ContaoGroup.FREE);
+        int payUser = ContaoCore.pManager.getGroupSize(ContaoGroup.PAY);
+        int modUser = ContaoCore.pManager.getGroupSize(ContaoGroup.MOD);
+        int adminUser = ContaoCore.pManager.getGroupSize(ContaoGroup.ADMIN);
+
+        StatisticHandler.handleStatistic(new OnlineStatistic(totalPlayer, xUser, defaultUser, probeUser, freeUser, payUser, modUser, adminUser));
     }
 
 }
