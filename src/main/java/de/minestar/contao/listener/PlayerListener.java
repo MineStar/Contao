@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,6 +33,7 @@ import org.bukkit.event.player.PlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import de.minestar.contao.core.ContaoCore;
+import de.minestar.contao.core.Settings;
 import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.UnregisteredUser;
 import de.minestar.contao.data.User;
@@ -85,7 +87,7 @@ public class PlayerListener implements Listener {
                     if (user.isProbeFinished()) {
                         // TODO: Check if player reached the requirements to be
                         // automatically a free user
-                        
+
                         // TODO: Fire statistic
                     }
                     attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
@@ -111,19 +113,28 @@ public class PlayerListener implements Listener {
         // TODO: Send start up information
         // Online list
         // Warnings
-        
+
         // TODO: Fire statistic
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         ContaoCore.pManager.removeUser(event.getPlayer().getName());
-        
+
         // TODO: Fire statistic
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        // TODO: Implement chat handeling
+
+        event.setFormat("%2$s");
+        Player player = event.getPlayer();
+        ContaoGroup group = ContaoCore.pManager.getUser(player).getGroup();
+
+        ChatColor color = Settings.getColor(group);
+        if (color == null)
+            color = ChatColor.GRAY;
+
+        event.setMessage(color + player.getDisplayName() + ChatColor.WHITE + ": " + event.getMessage());
     }
 }

@@ -56,6 +56,12 @@ public class ContaoCore extends AbstractCore {
     }
 
     @Override
+    protected boolean loadingConfigs(File dataFolder) {
+
+        return Settings.init(dataFolder, NAME, getDescription().getVersion());
+    }
+
+    @Override
     protected boolean createManager() {
 
         dbHandler = new DatabaseHandler(NAME, new File(getDataFolder(), "sqlconfig.yml"));

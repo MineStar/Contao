@@ -1,0 +1,26 @@
+VERSION: ${pom.version}
+# Possible color codes are: 
+# 0 = Black
+# 1 = Dark Blue
+# 2 = Dark Green
+# 3 = Dark Aqua
+# 4 = Dark Red
+# 5 = Dark Purple
+# 6 = Gold
+# 7 = Gray
+# 8 = Dark Gray
+# 9 = Blue
+# a = Green
+# b = Aqua
+# c = Red
+# d = Light Purple
+# e = Yellow
+# f = White
+Chat Colors:
+    admin: c
+    mod: b
+    pay: b
+    free: a
+    probe: '5'
+    default: '7'
+    x: '7'

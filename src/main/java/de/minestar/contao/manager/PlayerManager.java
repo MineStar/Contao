@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.bukkit.entity.Player;
+
+import de.minestar.contao.core.Settings;
 import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.User;
 
@@ -50,6 +53,10 @@ public class PlayerManager {
         groupMap.get(user.getGroup()).remove(user);
     }
 
+    public User getUser(Player player) {
+        return getUser(player.getName());
+    }
+
     public User getUser(String userName) {
         return onlineUserMap.get(userName.toLowerCase());
     }
@@ -59,19 +66,22 @@ public class PlayerManager {
         if (groupMember.isEmpty())
             return null;
 
-        // TODO: Get color for this group and append it
         StringBuilder sBuilder = new StringBuilder();
+
         // BUILD HEAD
+        sBuilder.append(Settings.getColor(contaoGroup));
         sBuilder.append(contaoGroup.getDisplayName());
         sBuilder.append('(');
         sBuilder.append(getGroupSize(contaoGroup));
         sBuilder.append(") : ");
 
+        // ADD USER
         for (User user : groupMember) {
             sBuilder.append(user.getMinecraftNickname());
             sBuilder.append(", ");
         }
 
+        // DELETE THE LAST COMMATA
         sBuilder.delete(0, sBuilder.length() - 2);
 
         return sBuilder.toString();
