@@ -20,19 +20,33 @@ package de.minestar.contao.manager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 
+import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.User;
 
 public class PlayerManager {
 
     private Map<String, User> onlineUserMap = new HashMap<String, User>();
 
+    private Map<ContaoGroup, TreeSet<User>> groupMap = new HashMap<ContaoGroup, TreeSet<User>>();
+
+    public PlayerManager() {
+        for (ContaoGroup cGroup : ContaoGroup.values()) {
+            groupMap.put(cGroup, new TreeSet<User>());
+        }
+    }
+
     public void addUser(User user) {
         onlineUserMap.put(user.getMinecraftNickname().toLowerCase(), user);
+
+        groupMap.get(user.getGroup()).add(user);
     }
 
     public void removeUser(String userName) {
-        onlineUserMap.remove(userName.toLowerCase());
+        User user = onlineUserMap.remove(userName.toLowerCase());
+
+        groupMap.get(user.getGroup()).remove(user);
     }
 
     public User getUser(String userName) {

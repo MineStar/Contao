@@ -68,15 +68,23 @@ public enum ContaoGroup {
         return this.ordinal() < that.ordinal();
     }
 
+    public MinestarGroup getMinestarGroup() {
+        return group;
+    }
+
     private static Map<String, ContaoGroup> mapByName;
     private static Map<Integer, ContaoGroup> mapById;
+    private static Map<MinestarGroup, ContaoGroup> mapByMinestarGroup;
+
     static {
         mapByName = new HashMap<String, ContaoGroup>();
         mapById = new HashMap<Integer, ContaoGroup>();
+        mapByMinestarGroup = new HashMap<MinestarGroup, ContaoGroup>();
 
         for (ContaoGroup group : ContaoGroup.values()) {
             mapByName.put(group.getName().toLowerCase(), group);
             mapById.put(group.getContaoGroupId(), group);
+            mapByMinestarGroup.put(group.getMinestarGroup(), group);
         }
     }
 
@@ -86,5 +94,9 @@ public enum ContaoGroup {
 
     public static ContaoGroup get(int groupID) {
         return mapById.get(groupID);
+    }
+
+    public static ContaoGroup get(MinestarGroup minestarGroup) {
+        return mapByMinestarGroup.get(minestarGroup);
     }
 }

@@ -18,31 +18,108 @@
 
 package de.minestar.contao.listener;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import de.minestar.contao.core.ContaoCore;
+import de.minestar.contao.data.ContaoGroup;
+import de.minestar.contao.data.UnregisteredUser;
+import de.minestar.contao.data.User;
+import de.minestar.core.MinestarCore;
+import de.minestar.core.units.MinestarGroup;
+import de.minestar.core.units.MinestarPlayer;
+
 public class PlayerListener implements Listener {
+
+    // TEMPONARY MAP FOR USER WHO ARE IN THE LOGIN PROCESS
+    private Map<String, User> attemptToLoginUser = new HashMap<String, User>();
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerPreLogin(PlayerPreLoginEvent event) {
-        // TODO: Check database if player is in database
-        // TODO: Check database if contao group is the same as the groupmanager
-        // group
-    }
 
+        User user = ContaoCore.dbHandler.getUser(event.getName());
+        // IS DEFAULT OR X USER
+        if (user == null) {
+            MinestarPlayer mPlayer = MinestarCore.getPlayer(event.getName());
+            if (mPlayer != null) {
+                user = new UnregisteredUser(event.getName(), ContaoGroup.get(mPlayer.getMinestarGroup()));
+            }
+            attemptToLoginUser.put(event.getName(), user);
+        }
+        // PLAYER IS AT LEAST A PROBE MEMBER
+        else {
+            // ADMINS ARE NOT CONTROLLED BY SYSTEM TO PREVENT ERRORS
+            if (user.getGroup().equals(ContaoGroup.ADMIN))
+                return;
+
+            // GET GROUP FROM GROUP MANAGER PLUGIN
+            MinestarGroup localGroup = MinestarCore.getPlayer(event.getName()).getMinestarGroup();
+
+            // COMPARE LOCAL GROUP WITH CONTAO GROUP IN DATABASE
+            if (!localGroup.equals(user.getGroup().getMinestarGroup())) {
+                // TODO: Update local group
+            }
+
+            switch (user.getGroup()) {
+                case PAY :
+                    if (user.isPayExpired(new Date())) {
+                        // TODO: Downgrade to free user
+                    }
+                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
+                    break;
+                case FREE :
+                    // TODO: Check if server is full - kick free player when yes
+                    break;
+
+                case PROBE :
+                    if (user.isProbeFinished()) {
+                        // TODO: Check if player reached the requirements to be
+                        // automatically a free user
+                        
+                        // TODO: Fire statistic
+                    }
+                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
+                    break;
+
+                // DO NOTHING
+                default :
+                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
+
+                    break;
+
+            }
+
+        }
+    }
     @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        // TODO: Put player in online player list
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+
+        User user = attemptToLoginUser.get(player.getName().toLowerCase());
+        ContaoCore.pManager.addUser(user);
+
+        // TODO: Send start up information
+        // Online list
+        // Warnings
+        
+        // TODO: Fire statistic
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        // TODO: Remove player from online player list
+        ContaoCore.pManager.removeUser(event.getPlayer().getName());
+        
+        // TODO: Fire statistic
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

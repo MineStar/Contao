@@ -21,7 +21,7 @@ package de.minestar.contao.data;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public class User {
+public class User implements Comparable<User> {
 
     private final int ID;
     private final int contaoID;
@@ -79,20 +79,37 @@ public class User {
         return usedFreePayWeek;
     }
 
+    public boolean isPayExpired() {
+        return isPayExpired(new Date());
+    }
+
     public boolean isPayExpired(Date date) {
         return expireDate.after(date);
     }
 
-    public boolean inProbeEnded(Date date) {
+    public boolean isProbeFinished() {
+        return isProbeFinished(new Date());
+    }
+
+    public boolean isProbeFinished(Date date) {
         return probeEndDate.after(date);
     }
 
     public ContaoGroup getGroup() {
         return group;
     }
+    
+    public boolean isRegistered() {
+        return true;
+    }
 
     @Override
     public String toString() {
         return "User={ID=" + ID + " ; ContaoID=" + contaoID + " ; ContaoNickname=" + contaoNickname + " ; MinecraftNickname=" + minecraftNickname + " ; ExpireDate=" + expireDate + " ; StartDate=" + startDate + " ; ProbeEndDate=" + probeEndDate + " ; UsedFreePayWeek=" + usedFreePayWeek + " ; ContaoGroup=" + group + " }";
+    }
+
+    @Override
+    public int compareTo(User that) {
+        return this.minecraftNickname.compareTo(that.minecraftNickname);
     }
 }
