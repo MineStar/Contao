@@ -90,6 +90,7 @@ public class PlayerListener implements Listener {
                         pManager.setGroup(user, ContaoGroup.FREE);
                         user = dbHandler.getUser(user.getMinecraftNickname());
                         ConsoleUtils.printInfo(ContaoCore.NAME, "User '" + user.getMinecraftNickname() + "'s pay is expired! Back to free.");
+                        // TODO: Use VinciCode to send a message
                     }
                     break;
                 case FREE :
@@ -102,13 +103,15 @@ public class PlayerListener implements Listener {
                     break;
 
                 case PROBE :
-                    if (user.isProbeFinished()) {
-                        // TODO: Check if player reached the requirements to be
-                        // automatically a free user
-
+                    if (pManager.canBeFree(user)) {
+                        dbHandler.updateProbeEndDate(user, null);
+                        dbHandler.updateGroup(user, ContaoGroup.FREE);
+                        pManager.setGroup(user, ContaoGroup.FREE);
+                        user = dbHandler.getUser(user.getMinecraftNickname());
                         // TODO: Fire statistic
-
+                        // TODO: Use VinciCode to send a message
                     }
+
                     break;
 
                 // DO NOTHING

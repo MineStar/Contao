@@ -107,4 +107,9 @@ public class PlayerManager {
             mPlayer.setGroup(newGroup.getMinestarGroup());
         }
     }
+
+    public boolean canBeFree(User probeUser) {
+        // TODO: Implement requirements
+        return false;
+    }
 }
