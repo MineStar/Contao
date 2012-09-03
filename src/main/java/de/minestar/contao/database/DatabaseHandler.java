@@ -33,6 +33,10 @@ import de.minestar.minestarlibrary.utils.ConsoleUtils;
 
 public class DatabaseHandler extends AbstractMySQLHandler {
 
+    // -27079750800000 IS THE TIME IN MILLISECONDS FOR THE DATE
+    // 1111-11-11
+    public static final Timestamp NON_PAY_DATE = new Timestamp(-27079750800000L);
+
     public DatabaseHandler(String pluginName, File SQLConfigFile) {
         super(pluginName, SQLConfigFile);
     }

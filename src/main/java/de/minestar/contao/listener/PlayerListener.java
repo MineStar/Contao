@@ -18,6 +18,9 @@
 
 package de.minestar.contao.listener;
 
+import static de.minestar.contao.core.ContaoCore.dbHandler;
+import static de.minestar.contao.core.ContaoCore.pManager;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +42,7 @@ import de.minestar.contao.core.Settings;
 import de.minestar.contao.data.ContaoGroup;
 import de.minestar.contao.data.UnregisteredUser;
 import de.minestar.contao.data.User;
+import de.minestar.contao.database.DatabaseHandler;
 import de.minestar.core.MinestarCore;
 import de.minestar.core.units.MinestarGroup;
 import de.minestar.core.units.MinestarPlayer;
@@ -53,7 +57,7 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerPreLogin(PlayerPreLoginEvent event) {
 
-        User user = ContaoCore.dbHandler.getUser(event.getName());
+        User user = dbHandler.getUser(event.getName());
         // IS DEFAULT OR X USER
         if (user == null) {
             MinestarPlayer mPlayer = MinestarCore.getPlayer(event.getName());
@@ -73,19 +77,24 @@ public class PlayerListener implements Listener {
 
             // COMPARE LOCAL GROUP WITH CONTAO GROUP IN DATABASE
             if (!localGroup.equals(user.getGroup().getMinestarGroup())) {
-                ContaoCore.pManager.setGroup(user, user.getGroup());
+                pManager.setGroup(user, user.getGroup());
                 ConsoleUtils.printWarning(ContaoCore.NAME, "User '" + user.getMinecraftNickname() + "' has a different contao and minecraft group! Contao Group=" + user.getGroup() + " ; Minecraft Group=" + localGroup + ". User is now in the Contao Group " + user.getGroup());
             }
 
             switch (user.getGroup()) {
                 case PAY :
                     if (user.isPayExpired(new Date())) {
-                        // TODO: Downgrade to free user
+                        // DOWNGRADE TO FREE USER
+                        dbHandler.updateGroup(user, ContaoGroup.FREE);
+                        dbHandler.updateExpireDate(user, DatabaseHandler.NON_PAY_DATE);
+                        pManager.setGroup(user, ContaoGroup.FREE);
+                        user = dbHandler.getUser(user.getMinecraftNickname());
+                        ConsoleUtils.printInfo(ContaoCore.NAME, "User '" + user.getMinecraftNickname() + "'s pay is expired! Back to free.");
                     }
                     break;
                 case FREE :
                     // FREE SLOTS ARE FULL
-                    if (ContaoCore.pManager.getGroupSize(ContaoGroup.FREE) >= Settings.getFreeSlots()) {
+                    if (pManager.getGroupSize(ContaoGroup.FREE) >= Settings.getFreeSlots()) {
                         // TODO: Outsource text to settings
                         event.disallow(Result.KICK_FULL, "Alle Free Slots sind belegt.");
                         return;
@@ -112,6 +121,7 @@ public class PlayerListener implements Listener {
             attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
         }
     }
+
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -121,14 +131,14 @@ public class PlayerListener implements Listener {
             // SOMETHING WENT SOMEWHERE TERRIBLE WRONG
             return;
         }
-        ContaoCore.pManager.addUser(user);
+        pManager.addUser(user);
 
         PlayerUtils.sendMessage(player, ChatColor.GOLD, Bukkit.getOnlinePlayers().length + " / " + Bukkit.getMaxPlayers());
 
         // WRITE GROUPS
         String groupText = "";
         for (ContaoGroup group : ContaoGroup.values()) {
-            groupText = ContaoCore.pManager.getGroupAsString(group);
+            groupText = pManager.getGroupAsString(group);
             // NULL = NO MEMBER OF THIS GROUP IS ONLINE
             if (groupText != null)
                 PlayerUtils.sendBlankMessage(player, groupText);
@@ -142,7 +152,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        ContaoCore.pManager.removeUser(event.getPlayer().getName());
+        pManager.removeUser(event.getPlayer().getName());
 
         // TODO: Fire statistic
     }
@@ -152,7 +162,7 @@ public class PlayerListener implements Listener {
 
         event.setFormat("%2$s");
         Player player = event.getPlayer();
-        ContaoGroup group = ContaoCore.pManager.getUser(player).getGroup();
+        ContaoGroup group = pManager.getUser(player).getGroup();
 
         ChatColor color = Settings.getColor(group);
         if (color == null)
