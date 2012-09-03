@@ -41,6 +41,7 @@ import de.minestar.contao.data.User;
 import de.minestar.core.MinestarCore;
 import de.minestar.core.units.MinestarGroup;
 import de.minestar.core.units.MinestarPlayer;
+import de.minestar.minestarlibrary.utils.ConsoleUtils;
 import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 public class PlayerListener implements Listener {
@@ -71,7 +72,8 @@ public class PlayerListener implements Listener {
 
             // COMPARE LOCAL GROUP WITH CONTAO GROUP IN DATABASE
             if (!localGroup.equals(user.getGroup().getMinestarGroup())) {
-                // TODO: Update local group
+                ContaoCore.pManager.setGroup(user, user.getGroup());
+                ConsoleUtils.printWarning(ContaoCore.NAME, "User '" + user.getMinecraftNickname() + "' has a different contao and minecraft group! Contao Group=" + user.getGroup() + " ; Minecraft Group=" + localGroup + ". User is now in the Contao Group " + user.getGroup());
             }
 
             switch (user.getGroup()) {
