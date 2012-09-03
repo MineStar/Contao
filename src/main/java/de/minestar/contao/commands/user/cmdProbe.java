@@ -89,9 +89,11 @@ public class cmdProbe extends AbstractCommand {
         if (ContaoCore.dbHandler.addUser(id, user.getMinecraftNickname(), sender.getName())) {
             // LOAD NEW USER FROM DATABASE
             // TODO: Mabye set new values instead of loading them from database?
+            ContaoCore.pManager.removeUser(user.getMinecraftNickname());
             user = ContaoCore.dbHandler.getUser(user.getMinecraftNickname());
 
             ContaoCore.pManager.changeGroup(user, ContaoGroup.PROBE);
+            ContaoCore.pManager.addUser(user);
 
             Player player = Bukkit.getPlayerExact(user.getMinecraftNickname());
 
