@@ -18,10 +18,16 @@
 
 package de.minestar.contao.commands.list;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import de.minestar.contao.core.ContaoCore;
+import de.minestar.contao.data.ContaoGroup;
 import de.minestar.minestarlibrary.commands.AbstractCommand;
+import de.minestar.minestarlibrary.utils.ChatUtils;
 
 public class cmdList extends AbstractCommand {
 
@@ -31,7 +37,27 @@ public class cmdList extends AbstractCommand {
 
     @Override
     public void execute(String[] args, Player player) {
-        // TODO Auto-generated method stub
+        list(player);
+    }
+
+    @Override
+    public void execute(String[] args, ConsoleCommandSender console) {
+        list(console);
+    }
+
+    private void list(CommandSender sender) {
+
+        ChatUtils.writeMessage(sender, ChatColor.GOLD.toString() + Bukkit.getOnlinePlayers().length + " / " + Bukkit.getMaxPlayers());
+
+        // WRITE GROUPS
+        String groupText = "";
+        for (ContaoGroup group : ContaoGroup.values()) {
+            groupText = ContaoCore.pManager.getGroupAsString(group);
+            // NULL = NO MEMBER OF THIS GROUP IS ONLINE
+            if (groupText != null)
+                ChatUtils.writeMessage(sender, groupText);
+        }
+
     }
 
 }

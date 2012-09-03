@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,6 +41,7 @@ import de.minestar.contao.data.User;
 import de.minestar.core.MinestarCore;
 import de.minestar.core.units.MinestarGroup;
 import de.minestar.core.units.MinestarPlayer;
+import de.minestar.minestarlibrary.utils.PlayerUtils;
 
 public class PlayerListener implements Listener {
 
@@ -114,8 +116,18 @@ public class PlayerListener implements Listener {
         }
         ContaoCore.pManager.addUser(user);
 
+        PlayerUtils.sendMessage(player, ChatColor.GOLD, Bukkit.getOnlinePlayers().length + " / " + Bukkit.getMaxPlayers());
+
+        // WRITE GROUPS
+        String groupText = "";
+        for (ContaoGroup group : ContaoGroup.values()) {
+            groupText = ContaoCore.pManager.getGroupAsString(group);
+            // NULL = NO MEMBER OF THIS GROUP IS ONLINE
+            if (groupText != null)
+                PlayerUtils.sendBlankMessage(player, groupText);
+        }
+
         // TODO: Send start up information
-        // Online list
         // Warnings
 
         // TODO: Fire statistic
