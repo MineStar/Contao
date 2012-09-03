@@ -31,6 +31,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import de.minestar.contao.core.ContaoCore;
@@ -81,10 +82,14 @@ public class PlayerListener implements Listener {
                     if (user.isPayExpired(new Date())) {
                         // TODO: Downgrade to free user
                     }
-                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
                     break;
                 case FREE :
-                    // TODO: Check if server is full - kick free player when yes
+                    // FREE SLOTS ARE FULL
+                    if (ContaoCore.pManager.getGroupSize(ContaoGroup.FREE) >= Settings.getFreeSlots()) {
+                        // TODO: Outsource text to settings
+                        event.disallow(Result.KICK_FULL, "Alle Free Slots sind belegt.");
+                        return;
+                    }
                     break;
 
                 case PROBE :
@@ -93,18 +98,18 @@ public class PlayerListener implements Listener {
                         // automatically a free user
 
                         // TODO: Fire statistic
+
                     }
-                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
                     break;
 
                 // DO NOTHING
                 default :
-                    attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
 
                     break;
 
             }
 
+            attemptToLoginUser.put(user.getMinecraftNickname().toLowerCase(), user);
         }
     }
     @EventHandler(priority = EventPriority.LOW)

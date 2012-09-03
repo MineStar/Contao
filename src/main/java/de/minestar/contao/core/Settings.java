@@ -34,6 +34,8 @@ public class Settings {
 
     private static Map<ContaoGroup, ChatColor> colorMap;
 
+    private static int freeSlots;
+
     /* USED FOR SETTING */
 
     private static MinestarConfig config;
@@ -66,6 +68,8 @@ public class Settings {
 
         /* COLORS */
         loadColors();
+
+        freeSlots = config.getInt("Slots.Free");
     }
 
     private static void loadColors() {
@@ -81,5 +85,21 @@ public class Settings {
 
     public static ChatColor getColor(ContaoGroup contaoGroup) {
         return colorMap.get(contaoGroup);
+    }
+
+    // FREE SLOT MANAGEMENT
+
+    public static int getFreeSlots() {
+        return freeSlots;
+    }
+
+    public static void setFreeSlots(int freeSlots) {
+        Settings.freeSlots = freeSlots;
+        config.set("Slots.Free", freeSlots);
+        try {
+            config.save();
+        } catch (Exception e) {
+            ConsoleUtils.printException(e, ContaoCore.NAME, "Can't save free slots to config!");
+        }
     }
 }
